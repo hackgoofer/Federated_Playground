@@ -11,6 +11,7 @@ from torch.autograd import Variable
 from copy import deepcopy
 
 FEDERATED = 0
+
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
 parser.add_argument('--batch-size', type=int, default=64, metavar='N',
@@ -120,8 +121,7 @@ def train_federated(epoch, child_train_data, model, optimizer):
         else:
             for p1, p2 in zip(final_gradients, gradients):
                 p1.add_(p2)
-        if 0:
-            import pdb; pdb.set_trace()
+
         optimizer.step()
         nounce = batch_size + nounce
         if batch_idx % args.log_interval == 0:
@@ -201,13 +201,12 @@ def updateOptimizer(op, grad, copy_op):
         for key, value in copy_op.state_dict()['state'].items():
             op_state[key] = deepcopy(value)
     i = 0
-    for key, value in op_state.items():
+    for key, _ in op_state.items():
         op_state[key] = deepcopy(grad[i])
         i = i + 1
-    if 0:
-        import pdb; pdb.set_trace()
-#    op.load_state_dict({'state': op_state, 'param_groups': op_param})
-    op.param_groups[0]['params'][0].grad = deepcopy(grad)
+
+    op.load_state_dict({'state': op_state, 'param_groups': op_param})
+    # op.param_groups[0]['params'][0].grad = deepcopy(grad)
 
 def updateOptimizer1(op, grad, copy_op):
     for group in op.param_groups:
@@ -237,5 +236,3 @@ if FEDERATED:
         test(model)
 else:
     federated_learning()
-
-
